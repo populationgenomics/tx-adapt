@@ -11,6 +11,7 @@ from analysis_runner import dataproc
 from cpg_utils.config import get_config
 from cpg_utils.hail_batch import (
     remote_tmpdir,
+    copy_common_env,
 )
 import click
 
@@ -50,6 +51,7 @@ def main(script: str, input_path: str):
         num_workers=2,
         cluster_name='run vep',
     )
+    copy_common_env(job)
     job.cpu(2)
     job.memory('standard')
     job.storage('20G')

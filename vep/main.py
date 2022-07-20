@@ -33,7 +33,11 @@ def main(script: str, input_path: str):
     )
 
     # create a hail batch
-    batch = hb.Batch(name='run_vep_in_dataproc_cluster', backend=backend)
+    batch = hb.Batch(
+        name='run_vep_in_dataproc_cluster',
+        backend=backend,
+        default_python_image=get_config()['workflow']['driver_image'],
+    )
 
     job = dataproc.hail_dataproc_job(
         batch=batch,

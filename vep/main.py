@@ -6,9 +6,12 @@ Taken from Matt Welland's script, run_vep_help.py
 """
 
 
-import os
 import hailtop.batch as hb
 from analysis_runner import dataproc
+from cpg_utils.config import get_config
+from cpg_utils.hail_batch import (
+    remote_tmpdir,
+)
 import click
 
 
@@ -23,13 +26,13 @@ def main(script: str, input_path: str):
     :param script: str, the path to the VEP main script
     """
 
-    service_backend = hb.ServiceBackend(
-        billing_project=os.getenv('HAIL_BILLING_PROJECT'),
-        bucket=os.getenv('HAIL_BUCKET'),
+    backend = hb.ServiceBackend(
+        billing_project=get_config()['hail']['billing_project'],
+        remote_tmpdir=remote_tmpdir(),
     )
 
     # create a hail batch
-    batch = hb.Batch(name='run_vep_in_dataproc_cluster', backend=service_backend)
+    batch = hb.Batch(name='run_vep_in_dataproc_cluster', backend=backend)
 
     job = dataproc.hail_dataproc_job(
         batch=batch,

@@ -18,7 +18,10 @@ import click
 
 @click.command()
 @click.option('--script', 'script', help='path to VEP main script')
-def main(script: str):
+@click.option(
+    '--input-path', required=True, help='Path to GTEx parquet files to run VEP on'
+)
+def main(script: str, input_path: str):
     """
     runs a script inside dataproc to execute VEP
     :param script: str, the path to the VEP main script
@@ -41,7 +44,7 @@ def main(script: str):
         worker_machine_type='n1-highmem-8',
         worker_boot_disk_size=200,
         secondary_worker_boot_disk_size=200,
-        script=f'{script}',
+        script=f'{script} --input-path {input_path}',
         max_age='12h',
         init=[
             'gs://cpg-reference/hail_dataproc/install_common.sh',

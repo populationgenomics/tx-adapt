@@ -8,9 +8,6 @@ Run VEP on GTEx dataset
 import click
 import hail as hl
 import pandas as pd
-from cpg_utils.hail_batch import (
-    output_path,
-)
 
 # from cloudpathlib import AnyPath
 GTEX_FILE = (
@@ -45,7 +42,7 @@ def main():
     # 'vep' requires key to be two fields 'locus' (type 'locus<any>') and 'alleles' (type 'array<str>')
     ht = ht.key_by('locus', 'alleles')
     vep = hl.vep(ht, config='file:///vep_data/vep-gcloud.json')
-    vep_path = output_path('vep105_GRCh38.mt')
+    vep_path = 'gs://cpg-tob-wgs-test/vep/v0/vep105_GRCh38.mt'
     vep.write(vep_path)
 
 

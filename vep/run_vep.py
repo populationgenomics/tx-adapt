@@ -11,7 +11,8 @@ import pandas as pd
 from cpg_utils.hail_batch import (
     output_path,
 )
-from cloudpathlib import AnyPath
+
+# from cloudpathlib import AnyPath
 
 
 @click.command()
@@ -25,11 +26,12 @@ def main(input_path: str):
 
     hl.init(default_reference='GRCh38')
 
-    # read in all GTEX chromosome files
-    all_chromosome_files = list(
-        AnyPath(input_path).glob('*')  # pylint: disable=no-member
-    )
-    gtex = pd.concat((pd.read_parquet(f) for f in all_chromosome_files))
+    # # read in all GTEX chromosome files
+    # all_chromosome_files = list(
+    #     AnyPath(input_path).glob('*')  # pylint: disable=no-member
+    # )
+    # gtex = pd.concat((pd.read_parquet(f) for f in all_chromosome_files))
+    gtex = pd.read_parquet(input_path)
     # add in necessary VEP annotation
     variant_id_info = gtex.variant_id.str.split('_').str[0:4]
     gtex['chr'], gtex['position'], gtex['alleles'] = (

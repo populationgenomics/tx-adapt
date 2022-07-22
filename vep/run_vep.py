@@ -42,6 +42,8 @@ def main():
     # convert to hail table and add the required locus key (the required alleles key is already inside the ht)
     ht = hl.Table.from_pandas(gtex)
     ht = ht.annotate(locus=hl.locus(ht.chr, hl.int32(ht.position)))
+    # 'vep' requires key to be two fields 'locus' (type 'locus<any>') and 'alleles' (type 'array<str>')
+    ht = ht.key_by('locus', 'alleles')
     vep = hl.vep(ht, config='file:///vep_data/vep-gcloud.json')
     vep_path = output_path('vep105_GRCh38.mt')
     vep.write(vep_path)

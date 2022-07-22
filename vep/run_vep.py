@@ -13,13 +13,13 @@ from cpg_utils.hail_batch import (
 )
 
 # from cloudpathlib import AnyPath
+GTEX_FILE = (
+    'gs://cpg-gtex-test/v8/whole_blood/Whole_Blood.v8.EUR.allpairs.chr22.parquet'
+)
 
 
 @click.command()
-@click.option(
-    '--input-path', required=True, help='Path to GTEx parquet files to run VEP on'
-)
-def main(input_path: str):
+def main():
     """
     Run vep using main.py wrapper
     """
@@ -31,7 +31,7 @@ def main(input_path: str):
     #     AnyPath(input_path).glob('*')  # pylint: disable=no-member
     # )
     # gtex = pd.concat((pd.read_parquet(f) for f in all_chromosome_files))
-    gtex = pd.read_parquet(input_path)
+    gtex = pd.read_parquet(GTEX_FILE)
     # add in necessary VEP annotation
     variant_id_info = gtex.variant_id.str.split('_').str[0:4]
     gtex['chr'], gtex['position'], gtex['alleles'] = (

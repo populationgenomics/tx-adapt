@@ -29,7 +29,6 @@ def main():
     # )
     # gtex = pd.concat((pd.read_parquet(f) for f in all_chromosome_files))
     gtex = pd.read_parquet(GTEX_FILE)
-    gtex = gtex.head(100)
     # add in necessary VEP annotation
     variant_id_info = gtex.variant_id.str.split('_').str[0:4]
     gtex['chr'], gtex['position'], gtex['alleles'] = (
@@ -42,6 +41,9 @@ def main():
     ht = ht.annotate(locus=hl.locus(ht.chr, hl.int32(ht.position)))
     # 'vep' requires key to be two fields 'locus' (type 'locus<any>') and 'alleles' (type 'array<str>')
     ht = ht.key_by('locus', 'alleles')
+    # filter to biallelic loci only
+    ht = ht.filter(hl.len(ht.alleles) == 2)
+    ht = ht.filter(ht.alleles[1] != '*')
     vep = hl.vep(ht, config='file:///vep_data/vep-gcloud.json')
     vep_path = 'gs://cpg-gtex-test/vep/v0/vep105_GRCh38.mt'
     vep.write(vep_path)

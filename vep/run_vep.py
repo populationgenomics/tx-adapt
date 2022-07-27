@@ -5,9 +5,8 @@
 Run VEP on GTEx dataset
 """
 
-import click
 import hail as hl
-import pandas as pd
+from hail.utils.java import Env
 
 # from cloudpathlib import AnyPath
 GTEX_FILE = (
@@ -15,7 +14,6 @@ GTEX_FILE = (
 )
 
 
-@click.command()
 def main():
     """
     Run vep using main.py wrapper
@@ -23,23 +21,19 @@ def main():
 
     hl.init(default_reference='GRCh38')
 
-    # # read in all GTEX chromosome files
-    # all_chromosome_files = list(
-    #     AnyPath(input_path).glob('*')  # pylint: disable=no-member
-    # )
-    # gtex = pd.concat((pd.read_parquet(f) for f in all_chromosome_files))
-    gtex = pd.read_parquet(GTEX_FILE)
+    spark = Env.spark_session()
+
+    gtex = spark.read.parquet(GTEX_FILE)
+    ht = hl.Table.from_spark(gtex)
+
     # add in necessary VEP annotation
-    variant_id_info = gtex.variant_id.str.split('_').str[0:4]
-    gtex['chr'], gtex['position'], gtex['alleles'] = (
-        variant_id_info.str[0],
-        variant_id_info.str[1],
-        variant_id_info.str[2:4],
+    ht = ht.annotate(
+        chromosome=ht.variant_id.split('_')[0],
+        position=ht.variant_id.split('_')[1],
+        alleles=ht.variant_id.split('_')[2:4],
     )
-    # convert to hail table and add the required locus key (the required alleles key is already inside the ht)
-    ht = hl.Table.from_pandas(gtex)
-    ht = ht.annotate(locus=hl.locus(ht.chr, hl.int32(ht.position)))
-    # 'vep' requires key to be two fields 'locus' (type 'locus<any>') and 'alleles' (type 'array<str>')
+    ht = ht.annotate(locus=hl.locus(ht.chromosome, hl.int32(ht.position)))
+    # 'vep' requires the key to be two fields: 'locus' (type 'locus<any>') and 'alleles' (type 'array<str>')
     ht = ht.key_by('locus', 'alleles')
     # filter to biallelic loci only
     ht = ht.filter(hl.len(ht.alleles) == 2)

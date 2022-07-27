@@ -48,7 +48,6 @@ def main(script: str):
             'gs://cpg-reference/vep/vep-GRCh38.sh',
         ],
         job_name='run_vep',
-        num_secondary_workers=20,
         num_workers=2,
         cluster_name='run vep',
     )

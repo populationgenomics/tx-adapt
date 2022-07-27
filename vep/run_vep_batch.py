@@ -6,7 +6,6 @@ Run VEP on GTEx dataset
 """
 
 import hail as hl
-from hail.utils.java import Env
 import hailtop.batch as hb
 from cpg_utils.hail_batch import (
     copy_common_env,
@@ -14,6 +13,7 @@ from cpg_utils.hail_batch import (
     init_batch,
 )
 from cpg_utils.config import get_config
+from pyspark.sql import SparkSession
 
 GTEX_FILE = (
     'gs://cpg-gtex-test/v8/whole_blood/Whole_Blood.v8.EUR.allpairs.chr22.parquet'
@@ -27,7 +27,10 @@ def run_vep():
 
     init_batch()
 
-    spark = Env.spark_session()
+    spark = SparkSession.builder.appName(
+        'Python Spark SQL data source example'
+    ).getOrCreate()
+
     gtex = spark.read.parquet(GTEX_FILE)
     ht = hl.Table.from_spark(gtex)
     # add in necessary VEP annotation

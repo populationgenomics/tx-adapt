@@ -17,8 +17,8 @@ import click
 
 
 @click.command()
-@click.option('--script', 'script', help='path to VEP main script')
-def main(script: str):
+# @click.option('--script', 'script', help='path to VEP main script')
+def main():
     """
     runs a script inside dataproc to execute VEP
     :param script: str, the path to the VEP main script
@@ -38,23 +38,23 @@ def main(script: str):
 
     job = dataproc.hail_dataproc_job(
         batch=batch,
-        worker_machine_type='n1-highmem-8',
-        worker_boot_disk_size=200,
-        secondary_worker_boot_disk_size=200,
-        script=f'{script}',
+        # worker_machine_type='n1-highmem-8',
+        # worker_boot_disk_size=200,
+        # secondary_worker_boot_disk_size=200,
+        # script=f'{script}',
         max_age='12h',
         init=[
             'gs://cpg-reference/hail_dataproc/install_common.sh',
-            'gs://cpg-reference/vep/vep-GRCh38.sh',
+            # 'gs://cpg-reference/vep/vep-GRCh38.sh',
         ],
         job_name='run_vep',
-        num_workers=2,
+        # num_workers=2,
         cluster_name='run vep',
     )
     copy_common_env(job)
-    job.cpu(2)
-    job.memory('standard')
-    job.storage('20G')
+    # job.cpu(2)
+    # job.memory('standard')
+    # job.storage('20G')
 
     batch.run(wait=False)
 

@@ -18,7 +18,8 @@ def main():
     hl.init(default_reference='GRCh38')
 
     vep = hl.read_table(VEP_FILE)
-    vep.to_spark().write.parquet('gs://cpg-gtex-test/vep/v0/vep105_GRCh38.parquet')
+    vep = vep.to_pandas()
+    vep.to_csv('gs://cpg-gtex-test/vep/v0/vep105_GRCh38.csv')
 
 
 if __name__ == '__main__':

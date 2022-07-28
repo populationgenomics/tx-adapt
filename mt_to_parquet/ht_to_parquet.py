@@ -18,9 +18,9 @@ def main():
     hl.init(default_reference='GRCh38')
 
     vep = hl.read_table(VEP_FILE)
-    # vep = vep.key_by(vep.vep.most_severe_consequence)
-    # vep = vep.drop(vep.vep)
-    vep.export('gs://cpg-gtex-test/vep/v0/vep105_GRCh38.tsv.bgz')
+    vep = vep.key_by(vep.vep.most_severe_consequence)
+    vep = vep.drop(vep.vep)
+    vep.export('gs://cpg-gtex-test/vep/v0/vep105_GRCh38_keyed.tsv.bgz')
 
 
 if __name__ == '__main__':

@@ -18,8 +18,18 @@ def main():
     hl.init(default_reference='GRCh38')
 
     vep = hl.read_table(VEP_FILE)
-    vep = vep.key_by(vep.vep.most_severe_consequence)
-    vep = vep.drop(vep.vep)
+    gtex_keys = [
+        'phenotype_id',
+        'variant_id',
+        'tss_distance',
+        'maf',
+        'ma_samples',
+        'ma_count',
+        'pval_nominal',
+        'slope',
+        'slope_se',
+    ]
+    vep = vep.select(*gtex_keys, vep.vep.most_severe_consequence)
     vep.export('gs://cpg-gtex-test/vep/v0/vep105_GRCh38_keyed.tsv.bgz')
 
 

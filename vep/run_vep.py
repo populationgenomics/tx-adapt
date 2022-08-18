@@ -12,6 +12,7 @@ from hail.utils.java import Env
 GTEX_FILE = (
     'gs://cpg-gtex-test/v8/whole_blood/Whole_Blood.v8.EUR.allpairs.chr22.parquet'
 )
+CADD_HT = 'gs://cpg-reference/seqr/v0-1/combined_reference_data_grch38-2.0.4.ht'
 
 
 def main():
@@ -39,8 +40,15 @@ def main():
     ht = ht.filter(hl.len(ht.alleles) == 2)
     ht = ht.filter(ht.alleles[1] != '*')
     vep = hl.vep(ht, config='file:///vep_data/vep-gcloud.json')
-    vep_path = 'gs://cpg-gtex-test/vep/v0/vep105_GRCh38.mt'
-    vep.write(vep_path)
+    # only keep the most severe consequences
+    vep = vep.select(vep.vep.most_severe_consequence)
+    # add CADD annotation
+    cadd_ht = hl.read_table(CADD_HT)
+    vep = vep.annotate(
+        cadd=cadd_ht[vep.key].cadd,
+    )
+    vep_path = 'gs://cpg-gtex-test/vep/v0/vep105_cadd_GRCh38.tsv.bgz'
+    vep.export(vep_path)
 
 
 if __name__ == '__main__':

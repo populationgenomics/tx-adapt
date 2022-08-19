@@ -40,8 +40,11 @@ def main():
     ht = ht.filter(hl.len(ht.alleles) == 2)
     ht = ht.filter(ht.alleles[1] != '*')
     vep = hl.vep(ht, config='file:///vep_data/vep-gcloud.json')
-    # only keep the most severe consequences
-    vep = vep.select(vep.vep.most_severe_consequence)
+    # only keep GTEx annotation and the most severe consequences from VEP annotation
+    gtex_entries = list(ht.row)
+    keys = list(ht.key)
+    gtex_entries = [name for name in gtex_entries if name not in keys]
+    vep = vep.select(*gtex_entries, vep.vep.most_severe_consequence)
     # add CADD annotation
     cadd_ht = hl.read_table(CADD_HT)
     vep = vep.annotate(

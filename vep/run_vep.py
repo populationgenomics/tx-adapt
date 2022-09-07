@@ -5,17 +5,21 @@
 Run VEP on GTEx dataset
 """
 
+import click
 import hail as hl
 from hail.utils.java import Env
+from cpg_utils.hail_batch import output_path
 
 # from cloudpathlib import AnyPath
 GTEX_FILE = (
     'gs://cpg-gtex-test/v8/whole_blood/Whole_Blood.v8.EUR.allpairs.chr22.parquet'
 )
 CADD_HT = 'gs://cpg-reference/seqr/v0-1/combined_reference_data_grch38-2.0.4.ht'
+GENCODE_GTF = 'gs://cpg-gtex-test/reference/gencode.v26.annotation.gtf.gz'
 
 
-def main():
+@click.option('--vep-version', help='Version of VEP', default='104.3')
+def main(vep_version: str):
     """
     Run vep using main.py wrapper
     """
@@ -38,6 +42,8 @@ def main():
     ht = ht.key_by('locus', 'alleles')
     # filter to biallelic loci only
     ht = ht.filter(hl.len(ht.alleles) == 2)
+    # remove starred alleles, as this results in an error in VEP
+    # see https://discuss.hail.is/t/vep-output-variant-not-found-in-original-variants/1148
     ht = ht.filter(ht.alleles[1] != '*')
     vep = hl.vep(ht, config='file:///vep_data/vep-gcloud.json')
     # only keep GTEx annotation and the most severe consequences from VEP annotation
@@ -50,7 +56,12 @@ def main():
     vep = vep.annotate(
         cadd=cadd_ht[vep.key].cadd,
     )
-    vep_path = 'gs://cpg-gtex-test/vep/v0/vep105_cadd_GRCh38.tsv.bgz'
+    # add in ensembl ids
+    gtf = hl.experimental.import_gtf(
+        GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True
+    )
+    vep = vep.annotate(gene_id=gtf[vep.locus].gene_id)
+    vep_path = output_path(f'/vep{vep_version}_cadd_GRCh38.tsv.bgz')
     vep.export(vep_path)
 
 

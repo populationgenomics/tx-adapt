@@ -18,6 +18,7 @@ CADD_HT = 'gs://cpg-reference/seqr/v0-1/combined_reference_data_grch38-2.0.4.ht'
 GENCODE_GTF = 'gs://cpg-gtex-test/reference/gencode.v26.annotation.gtf.gz'
 
 
+@click.command()
 @click.option('--vep-version', help='Version of VEP', default='104.3')
 def main(vep_version: str):
     """
@@ -61,7 +62,7 @@ def main(vep_version: str):
         GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True
     )
     vep = vep.annotate(gene_id=gtf[vep.locus].gene_id)
-    vep_path = output_path(f'/vep{vep_version}_cadd_GRCh38.tsv.bgz')
+    vep_path = output_path(f'vep{vep_version}_cadd_GRCh38.tsv.bgz')
     vep.export(vep_path)
 
 

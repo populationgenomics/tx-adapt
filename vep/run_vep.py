@@ -31,6 +31,8 @@ def main(vep_version: str):
 
     gtex = spark.read.parquet(GTEX_FILE)
     ht = hl.Table.from_spark(gtex)
+    # test on 100 variants only
+    ht = ht.head(100)
 
     # add in necessary VEP annotation
     ht = ht.annotate(

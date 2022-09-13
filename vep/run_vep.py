@@ -44,6 +44,7 @@ def main(vep_version: str):
     # remove starred alleles, as this results in an error in VEP
     # see https://discuss.hail.is/t/vep-output-variant-not-found-in-original-variants/1148
     ht = ht.filter(ht.alleles[1] != '*')
+    ht = ht.select('phenotype_id', 'variant_id', 'chromosome', 'position')
     vep = hl.vep(ht, config='file:///vep_data/vep-gcloud.json')
     vep_path = output_path(f'vep{vep_version}_GRCh38.ht')
     vep.write(vep_path, overwrite=True)

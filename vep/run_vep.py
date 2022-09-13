@@ -45,8 +45,8 @@ def main(vep_version: str):
     # see https://discuss.hail.is/t/vep-output-variant-not-found-in-original-variants/1148
     ht = ht.filter(ht.alleles[1] != '*')
     vep = hl.vep(ht, config='file:///vep_data/vep-gcloud.json')
-    vep_path = output_path(f'vep{vep_version}_cadd_GRCh38.tsv.bgz')
-    vep.export(vep_path)
+    vep_path = output_path(f'vep{vep_version}_GRCh38.ht')
+    vep.write(vep_path, overwrite=True)
 
 
 if __name__ == '__main__':

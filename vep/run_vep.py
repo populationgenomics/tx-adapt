@@ -8,8 +8,7 @@ Run VEP on GTEx dataset
 import click
 import hail as hl
 from hail.utils.java import Env
-
-# from cpg_utils.hail_batch import output_path
+from cpg_utils.hail_batch import output_path
 
 # from cloudpathlib import AnyPath
 GTEX_FILE = (
@@ -32,6 +31,7 @@ def main(vep_version: str):
 
     gtex = spark.read.parquet(GTEX_FILE)
     ht = hl.Table.from_spark(gtex)
+    ht = ht.head(100)
 
     # add in necessary VEP annotation
     ht = ht.annotate(
@@ -69,9 +69,7 @@ def main(vep_version: str):
         GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True
     )
     vep = vep.annotate(gene_id=gtf[vep.locus].gene_id)
-    vep_path = (
-        f'gs://cpg-gtex-test/vep/v1/vep{vep_version}_cadd_GRCh38_annotation.tsv.bgz'
-    )
+    vep_path = output_path(f'vep{vep_version}_cadd_GRCh38_annotation.tsv.bgz')
     vep.export(vep_path)
 
 

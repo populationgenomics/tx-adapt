@@ -32,6 +32,8 @@ def main(vep_version: str):
     gtex = spark.read.parquet(GTEX_FILE)
     ht = hl.Table.from_spark(gtex)
 
+    # only select necessary columns
+    ht = ht.select('phenotype_id', 'variant_id', 'pval_nominal', 'slope', 'slope_se')
     # add in necessary VEP annotation
     ht = ht.annotate(
         chromosome=ht.variant_id.split('_')[0],

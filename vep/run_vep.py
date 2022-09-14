@@ -32,9 +32,6 @@ def main(vep_version: str):
     gtex = spark.read.parquet(GTEX_FILE)
     ht = hl.Table.from_spark(gtex)
 
-    # only select necessary columns
-    ht = ht.select('phenotype_id', 'variant_id')
-    # 'pval_nominal', 'slope', 'slope_se'
     # add in necessary VEP annotation
     ht = ht.annotate(
         chromosome=ht.variant_id.split('_')[0],
@@ -54,20 +51,20 @@ def main(vep_version: str):
     ht.write(ht_path, overwrite=True)
     vep = hl.vep(ht, config='file:///vep_data/vep-gcloud.json')
     # only keep GTEx annotation and the most severe consequences from VEP annotation
-    # gtex_entries = list(ht.row)
-    # keys = list(ht.key)
-    # gtex_entries = [name for name in gtex_entries if name not in keys]
-    # vep = vep.select(*gtex_entries, vep.vep.most_severe_consequence)
-    # # add CADD annotation
-    # cadd_ht = hl.read_table(CADD_HT)
-    # vep = vep.annotate(
-    #     cadd=cadd_ht[vep.key].cadd,
-    # )
-    # # add in ensembl ids
-    # gtf = hl.experimental.import_gtf(
-    #     GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True
-    # )
-    # vep = vep.annotate(gene_id=gtf[vep.locus].gene_id)
+    gtex_entries = list(ht.row)
+    keys = list(ht.key)
+    gtex_entries = [name for name in gtex_entries if name not in keys]
+    vep = vep.select(*gtex_entries, vep.vep.most_severe_consequence)
+    # add CADD annotation
+    cadd_ht = hl.read_table(CADD_HT)
+    vep = vep.annotate(
+        cadd=cadd_ht[vep.key].cadd,
+    )
+    # add in ensembl ids
+    gtf = hl.experimental.import_gtf(
+        GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True
+    )
+    vep = vep.annotate(gene_id=gtf[vep.locus].gene_id)
     vep_path = output_path(f'vep{vep_version}_cadd_GRCh38_annotation.tsv.bgz')
     vep.export(vep_path)
 

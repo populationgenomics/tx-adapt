@@ -54,7 +54,12 @@ def main(vep_version: str):
     gtex_entries = list(ht.row)
     keys = list(ht.key)
     gtex_entries = [name for name in gtex_entries if name not in keys]
-    vep = vep.select(*gtex_entries, vep.vep.most_severe_consequence)
+    vep = vep.select(
+        *gtex_entries,
+        vep.vep.most_severe_consequence,
+        vep.vep.transcript_consequences.consequence_terms,
+        vep.vep.transcript_consequences.transcript_id,
+    )
     # add CADD annotation
     cadd_ht = hl.read_table(CADD_HT)
     vep = vep.annotate(

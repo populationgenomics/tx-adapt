@@ -46,33 +46,30 @@ def main(vep_version: str):
     # remove starred alleles, as this results in an error in VEP
     # see https://discuss.hail.is/t/vep-output-variant-not-found-in-original-variants/1148
     ht = ht.filter(ht.alleles[1] != '*')
-    # save ht
-    ht_path = output_path('gtex_ht_filtered.ht')
-    ht.write(ht_path, overwrite=True)
     vep = hl.vep(ht, config='file:///vep_data/vep-gcloud.json')
-    # # only keep GTEx annotation and the most severe consequences from VEP annotation
-    # gtex_entries = list(ht.row)
-    # keys = list(ht.key)
-    # gtex_entries = [name for name in gtex_entries if name not in keys]
-    # vep = vep.select(
-    #     *gtex_entries,
-    #     vep.vep.most_severe_consequence,
-    #     vep.vep.transcript_consequences.consequence_terms,
-    #     vep.vep.transcript_consequences.transcript_id,
-    # )
-    # # add CADD annotation
-    # cadd_ht = hl.read_table(CADD_HT)
-    # vep = vep.annotate(
-    #     cadd=cadd_ht[vep.key].cadd,
-    # )
-    # # add in ensembl ids
-    # gtf = hl.experimental.import_gtf(
-    #     GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True
-    # )
-    # vep = vep.annotate(gene_id=gtf[vep.locus].gene_id)
-    # vep_path = output_path(f'vep{vep_version}_cadd_GRCh38_annotation.tsv.bgz')
-    vep_path = output_path(f'vep{vep_version}.tsv.bgz')
-    vep.export(vep_path)
+    # save vep ht
+    vep_path = output_path('vep{vep_version}.ht')
+    vep.write(vep_path, overwrite=True)
+    # only keep GTEx annotation and the most severe consequences from VEP annotation
+    gtex_entries = list(ht.row)
+    keys = list(ht.key)
+    gtex_entries = [name for name in gtex_entries if name not in keys]
+    vep = vep.select(
+        *gtex_entries,
+        vep.vep.most_severe_consequence,
+        vep.vep.transcript_consequences,
+    )
+    # add CADD annotation
+    cadd_ht = hl.read_table(CADD_HT)
+    vep = vep.annotate(
+        cadd=cadd_ht[vep.key].cadd,
+    )
+    # add in ensembl ids
+    gtf = hl.experimental.import_gtf(
+        GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True
+    )
+    vep = vep.annotate(gene_id=gtf[vep.locus].gene_id)
+    vep_path = output_path(f'vep{vep_version}_cadd_GRCh38_annotation.tsv.bgz')
 
 
 if __name__ == '__main__':

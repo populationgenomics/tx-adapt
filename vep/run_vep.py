@@ -48,7 +48,7 @@ def main(vep_version: str):
     ht = ht.filter(ht.alleles[1] != '*')
     vep = hl.vep(ht, config='file:///vep_data/vep-gcloud.json')
     # save vep ht
-    vep_path = output_path('vep{vep_version}.ht')
+    vep_path = output_path(f'vep{vep_version}.ht')
     vep.write(vep_path, overwrite=True)
     # only keep GTEx annotation and the most severe consequences from VEP annotation
     gtex_entries = list(ht.row)
@@ -70,6 +70,7 @@ def main(vep_version: str):
     )
     vep = vep.annotate(gene_id=gtf[vep.locus].gene_id)
     vep_path = output_path(f'vep{vep_version}_cadd_GRCh38_annotation.tsv.bgz')
+    vep.write(vep_path, overwrite=True)
 
 
 if __name__ == '__main__':

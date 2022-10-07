@@ -21,7 +21,7 @@ GENCODE_GTF = 'gs://cpg-gtex-test/reference/gencode.v26.annotation.gtf.gz'
 
 @click.command()
 @click.option('--gtex-file', help='gtex file to perform VEP annotation on')
-def main(gtex_file: str, tissue_type: str, chromosome: str):
+def main(gtex_file: str):
     """
     Run vep using main.py wrapper
     """

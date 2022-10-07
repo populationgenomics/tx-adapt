@@ -53,8 +53,8 @@ def main(gtex_file: str):
 
     # add CADD annotation
     cadd = hl.read_table(CADD_HT)
-    gtex = vep.annotate(
-        cadd=cadd[vep.key].cadd,
+    gtex = gtex.annotate(
+        cadd=cadd[gtex.key].cadd,
     )
     # add in ensembl ids
     gtf = hl.experimental.import_gtf(

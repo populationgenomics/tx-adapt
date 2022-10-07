@@ -26,7 +26,7 @@ def main(gtex_file: str):
     Run vep using main.py wrapper
     """
 
-    init_batch(worker_cores=8)
+    init_batch(worker_cores=8, driver_cores=8)
 
     gtex = pd.read_parquet(gtex_file)
     gtex = hl.Table.from_pandas(gtex)

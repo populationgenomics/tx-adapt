@@ -8,7 +8,7 @@ Run VEP on GTEx dataset
 import click
 import hail as hl
 from hail.utils.java import Env
-from cpg_utils.hail_batch import output_path
+from cpg_utils.hail_batch import init_batch, output_path
 
 # VEP 95 (GENCODE 29), which is closest to GENCODE 26
 VEP_HT = (
@@ -27,7 +27,7 @@ def main(gtex_file: str, tissue_type: str, chromosome: str):
     Run vep using main.py wrapper
     """
 
-    hl.init(default_reference='GRCh38')
+    init_batch()
 
     spark = Env.spark_session()
 

@@ -5,9 +5,10 @@
 Run VEP on GTEx dataset
 """
 
+import os
 import click
+import pandas as pd
 import hail as hl
-from hail.utils.java import Env
 from cpg_utils.hail_batch import init_batch, output_path
 
 # VEP 95 (GENCODE 29), which is closest to GENCODE 26
@@ -20,8 +21,6 @@ GENCODE_GTF = 'gs://cpg-gtex-test/reference/gencode.v26.annotation.gtf.gz'
 
 @click.command()
 @click.option('--gtex-file', help='gtex file to perform VEP annotation on')
-@click.option('--tissue-type', help='tissue type of gtex file')
-@click.option('--chromosome', help='chromosome of gtex file (without chr prefix)')
 def main(gtex_file: str, tissue_type: str, chromosome: str):
     """
     Run vep using main.py wrapper
@@ -29,10 +28,8 @@ def main(gtex_file: str, tissue_type: str, chromosome: str):
 
     init_batch()
 
-    spark = Env.spark_session()
-
-    gtex = spark.read.parquet(gtex_file)
-    gtex = hl.Table.from_spark(gtex)
+    gtex = pd.read_parquet(gtex_file)
+    gtex = hl.Table.from_pandas(gtex)
 
     # prepare ht for VEP annotation
     gtex = gtex.annotate(
@@ -64,8 +61,11 @@ def main(gtex_file: str, tissue_type: str, chromosome: str):
         GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True
     )
     gtex = gtex.annotate(gene_id=gtf[gtex.locus].gene_id)
+    # get tissue type and chromosome for annotating output file
+    tissue_type = os.path.basename(gtex_file).split('.')[0].lower()
+    chromosome = os.path.basename(gtex_file).split('.')[-2]
     gtex_path = output_path(
-        f'gtex_association_{tissue_type}_chr{chromosome}_vep95_cadd_annotated.tsv.bgz'
+        f'gtex_association_{tissue_type}_{chromosome}_vep95_cadd_annotated.tsv.bgz'
     )
     gtex.write(gtex_path, overwrite=True)
 

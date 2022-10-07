@@ -13,7 +13,7 @@ from cpg_utils.hail_batch import init_batch, output_path
 
 # VEP 95 (GENCODE 29), which is closest to GENCODE 26
 VEP_HT = (
-    'gs://gcp-public-data--gnomad/resources/context/grch38_context_vep_annotated.gtex/'
+    'gs://gcp-public-data--gnomad/resources/context/grch38_context_vep_annotated.ht/'
 )
 CADD_HT = 'gs://cpg-reference/seqr/v0-1/combined_reference_data_grch38-2.0.4.ht'
 GENCODE_GTF = 'gs://cpg-gtex-test/reference/gencode.v26.annotation.gtf.gz'

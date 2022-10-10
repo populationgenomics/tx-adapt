@@ -5,7 +5,7 @@
 # Library setup and loading data ---------------------------
 
 install.packages("googleCloudStorageR", repos = "http://cran.csiro.au")
-install.packages("viridis")
+install.packages("viridis", repos = "http://cran.csiro.au/")
 library(googleCloudStorageR)
 library(tidyverse)
 library(viridis)

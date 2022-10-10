@@ -27,13 +27,8 @@ paralogous_gene_file <- googleCloudStorageR::gcs_get_object(
   "mohamed_data/paralogs.txt"
 )
 
-association_data <- read.table(whole_blood_associations,
-  sep = "\t", header = TRUE
-)
-paralogous_gene_df <- read.csv(
-  paste0(input_folder, paralogous_gene_file),
-  na.strings = ""
-)
+association_data <- as.data.frame(whole_blood_associations)
+paralogous_gene_df <- as.data.frame(paralogous_gene_file)
 
 # Data cleaning and qc -----------------------
 

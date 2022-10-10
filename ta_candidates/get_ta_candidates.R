@@ -27,7 +27,7 @@ system(
   "gsutil cp gs://cpg-tx-adapt-test/mohamed_data/paralogs.txt paralogs.txt"
 )
 # read in files once copied
-whole_blood_associations <- read.table(
+association_data <- read.table(
   "vep88.10_cadd_GRCh38_annotation.tsv.bgz",
   sep = "\t", header = TRUE
 )

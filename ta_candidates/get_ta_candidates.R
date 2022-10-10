@@ -19,16 +19,21 @@ googleCloudStorageR::gcs_auth(token = token)
 # set bucket
 googleCloudStorageR::gcs_global_bucket("gs://cpg-tx-adapt-test")
 
-# Use VEP v88/Gencode 26
-whole_blood_associations <- googleCloudStorageR::gcs_get_object(
-  "vep/v5/vep88.10_cadd_GRCh38_annotation.tsv.bgz"
+# Copy in association analysis and paralogous gene files
+system(
+  "gsutil cp gs://cpg-tx-adapt-test/vep/v5/vep88.10_cadd_GRCh38_annotation.tsv.bgz vep88.10_cadd_GRCh38_annotation.tsv.bgz"
 )
-paralogous_gene_file <- googleCloudStorageR::gcs_get_object(
-  "mohamed_data/paralogs.txt"
+system(
+  "gsutil cp gs://cpg-tx-adapt-test/mohamed_data/paralogs.txt paralogs.txt"
 )
-
-association_data <- as.data.frame(whole_blood_associations)
-paralogous_gene_df <- as.data.frame(paralogous_gene_file)
+# read in files once copied
+whole_blood_associations <- read.table(
+  "vep88.10_cadd_GRCh38_annotation.tsv.bgz",
+  sep = "\t", header = TRUE
+)
+paralogous_gene_df <- read.csv("paralogs.txt",
+  na.strings = ""
+)
 
 # Data cleaning and qc -----------------------
 

@@ -7,13 +7,14 @@
 install.packages("googleCloudStorageR", repos = "http://cran.csiro.au")
 install.packages("viridis", repos = "http://cran.csiro.au/")
 library(googleCloudStorageR)
+library(gargle)
 library(tidyverse)
 library(viridis)
 
 # Google cloud setup/token authorisation (to get files from GCP)
 scope <- c("https://www.googleapis.com/auth/cloud-platform")
-token <- token_fetch(scopes = scope)
-gcs_auth(token = token)
+token <- gargle::token_fetch(scopes = scope)
+googleCloudStorageR::gcs_auth(token = token)
 
 # set bucket
 # googleCloudStorageR::gcs_global_bucket("gs://cpg-tx-adapt-test")

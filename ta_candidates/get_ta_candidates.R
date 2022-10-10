@@ -17,7 +17,7 @@ token <- gargle::token_fetch(scopes = scope)
 googleCloudStorageR::gcs_auth(token = token)
 
 # set bucket
-# googleCloudStorageR::gcs_global_bucket("gs://cpg-tx-adapt-test")
+googleCloudStorageR::gcs_global_bucket("gs://cpg-tx-adapt-test")
 
 # Use VEP v88/Gencode 26
 whole_blood_associations <- googleCloudStorageR::gcs_get_object(

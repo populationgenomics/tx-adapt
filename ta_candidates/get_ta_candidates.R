@@ -162,65 +162,62 @@ system(glue("gsutil cp {genome_wide_tsv} {exome_wide_tsv} {gcs_outdir}"))
 
 # # Plot data ---------------------------
 
-# plot_data <- function(df, title, plot_categegory, xlab, keep_facet) {
-#   # reassign paralogue names for better interpretability in plot
+plot_data <- function(df, title, plot_categegory, xlab, keep_facet) {
+  # reassign paralogue names for better interpretability in plot
 
-#   p <- ggplot(df, aes(
-#     x = factor({{ plot_categegory }}), fill = {{ plot_categegory }}
-#   )) +
-#     geom_bar(stat = "count", width = 0.7, alpha = 0.8) +
-#     geom_text(stat = "count", aes(label = ..count..), size = 5, vjust = -1) +
-#     scale_fill_viridis_d() +
-#     theme_bw() +
-#     ggtitle(title) +
-#     scale_x_discrete(guide = guide_axis(angle = 45)) +
-#     xlab(xlab) +
-#     ylab("n Variants") +
-#     theme(
-#       axis.text.x = element_blank(),
-#       axis.ticks.x = element_blank(),
-#       legend.title = element_blank(),
-#       strip.text.x = element_text(size = 17),
-#       text = element_text(size = 17)
-#     )
-#   if (tolower(keep_facet) == "yes") {
-#     p <- p + facet_grid(. ~ is_paralog, )
-#   }
-#   # save plot
-#   pdf(
-#     paste0(
-#       output_folder,
-#       deparse(substitute(df)), "_", deparse(substitute(plot_categegory)), ".pdf"
-#     ),
-#     width = 14, height = 8
-#   )
-#   print(p)
-#   dev.off()
-#   return(p)
-# }
+  p <- ggplot(df, aes(
+    x = factor({{ plot_categegory }}), fill = {{ plot_categegory }}
+  )) +
+    geom_bar(stat = "count", width = 0.7, alpha = 0.8) +
+    geom_text(stat = "count", aes(label = ..count..), size = 5, vjust = -1) +
+    scale_fill_viridis_d() +
+    theme_bw() +
+    ggtitle(title) +
+    scale_x_discrete(guide = guide_axis(angle = 45)) +
+    xlab(xlab) +
+    ylab("n Variants") +
+    theme(
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      legend.title = element_blank(),
+      strip.text.x = element_text(size = 17),
+      text = element_text(size = 17)
+    )
+  if (tolower(keep_facet) == "yes") {
+    p <- p + facet_grid(. ~ is_paralog, )
+  }
+  # save plot
+  ta_plot <- paste0(
+      deparse(substitute(df)), "_", deparse(substitute(plot_categegory)), ".pdf"
+    )
+  pdf(ta_plot, width = 14, height = 8)
+  print(p)
+  dev.off()
+  system(glue("gsutil cp {ta_plot} {gcs_outdir}"))
+}
 
-# # plot data
-# plot_data(
-#   df = genome_wide_sig, title = "Genome-wide Significance",
-#   plot_categegory = most_severe_consequence,
-#   xlab = "Most Severe Consequence", keep_facet = "Yes"
-# )
-# plot_data(
-#   df = exome_wide_sig, title = "Exome-wide Significance",
-#   plot_categegory = most_severe_consequence,
-#   xlab = "Most Severe Consequence", keep_facet = "Yes"
-# )
-# # now let's plot looking at the variant category
-# plot_data(
-#   df = genome_wide_sig, title = "Genome-wide Significance",
-#   plot_categegory = variant_category,
-#   xlab = "Variant category", keep_facet = "Yes"
-# )
-# plot_data(
-#   df = exome_wide_sig, title = "Exome-wide Significance",
-#   plot_categegory = variant_category,
-#   xlab = "Variant category", keep_facet = "Yes"
-# )
+# plot data
+plot_data(
+  df = genome_wide_sig, title = "Genome-wide Significance",
+  plot_categegory = most_severe_consequence,
+  xlab = "Most Severe Consequence", keep_facet = "Yes"
+)
+plot_data(
+  df = exome_wide_sig, title = "Exome-wide Significance",
+  plot_categegory = most_severe_consequence,
+  xlab = "Most Severe Consequence", keep_facet = "Yes"
+)
+# now let's plot looking at the variant category
+plot_data(
+  df = genome_wide_sig, title = "Genome-wide Significance",
+  plot_categegory = variant_category,
+  xlab = "Variant category", keep_facet = "Yes"
+)
+plot_data(
+  df = exome_wide_sig, title = "Exome-wide Significance",
+  plot_categegory = variant_category,
+  xlab = "Variant category", keep_facet = "Yes"
+)
 
 # # -----------------------------
 

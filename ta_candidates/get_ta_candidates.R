@@ -2,7 +2,7 @@
 
 # Investigate evidence of TA in humans using GTEx data
 
-# Library setup and loading data ---------------------------
+# Library setup and loading data ----------------------------------------------
 
 install.packages("googleCloudStorageR", repos = "http://cran.csiro.au")
 install.packages("viridis", repos = "http://cran.csiro.au/")
@@ -36,7 +36,7 @@ paralogous_gene_df <- read.csv("paralogs.txt",
   na.strings = ""
 )
 
-# Data cleaning and qc -----------------------
+# Data cleaning and qc --------------------------------------------------------
 
 # remove version numbers from association_data$phenotype_id and gene_id
 # https://www.biostars.org/p/302441/
@@ -96,7 +96,7 @@ association_data <- association_data %>%
     TRUE ~ as.character(most_severe_consequence)
   ))
 
-# Assign gene paralogs (and self-expression) --------------------------
+# Assign gene paralogs (and self-expression) ----------------------------------
 
 # Here, we want to match the gene_id in the association_data df to the
 # Gene.stable.ID in the paralogous gene df. Once these are linked, check whether
@@ -145,8 +145,8 @@ exome_wide_sig <- association_data %>% filter(pval_nominal <= 1e-5)
 
 # Write out table for which genes these are
 # both at genome and exome-level significance
-genome_wide_tsv <- "genome_wide_sig_candidates.tsv"
-exome_wide_tsv <- "exome_wide_sig_candidates.tsv"
+genome_wide_tsv <- "genome_wide_sig_candidates_either_direction.tsv"
+exome_wide_tsv <- "genome_wide_sig_candidates_either_direction.tsv"
 write.table(
   genome_wide_sig,
   file = genome_wide_tsv, sep = "\t",
@@ -160,14 +160,13 @@ write.table(
 gcs_outdir <- "gs://cpg-tx-adapt-test/output/"
 system(glue("gsutil cp {genome_wide_tsv} {exome_wide_tsv} {gcs_outdir}"))
 
-# # Plot data ---------------------------
+# Plot data -------------------------------------------------------------------
 
-# set new outpit directory before plotting
-gcs_outdir <- "gs://cpg-tx-adapt-test-web/most_severe_consequences/"
+# set output directory for plotting
+gcs_image_outdir <- "gs://cpg-tx-adapt-test-web/most_severe_consequences/"
 
+# make plotting function, as this is heavily repeated
 plot_data <- function(df, title, plot_categegory, xlab, keep_facet) {
-  # reassign paralogue names for better interpretability in plot
-
   p <- ggplot(df, aes(
     x = factor({{ plot_categegory }}), fill = {{ plot_categegory }}
   )) +
@@ -196,7 +195,8 @@ plot_data <- function(df, title, plot_categegory, xlab, keep_facet) {
   pdf(ta_plot, width = 14, height = 8)
   print(p)
   dev.off()
-  system(glue("gsutil cp {ta_plot} {gcs_outdir}"))
+  # copy pdf to system
+  system(glue("gsutil cp {ta_plot} {gcs_image_outdir}"))
 }
 
 # plot data
@@ -210,7 +210,7 @@ plot_data(
   plot_categegory = most_severe_consequence,
   xlab = "Most Severe Consequence", keep_facet = "Yes"
 )
-# now let's plot looking at the variant category
+# plot looking at the variant category
 plot_data(
   df = genome_wide_sig, title = "Genome-wide Significance",
   plot_categegory = variant_category,
@@ -222,52 +222,43 @@ plot_data(
   xlab = "Variant category", keep_facet = "Yes"
 )
 
-# # -----------------------------
+# Get TA candidates -----------------------------------------------------------
 
-# # Filter down to instances where variant leads to decreased expression
-# # of the gene it’s in, as well as increased expression of the paralog
-# negative_slope_ids <- association_data %>%
-#   filter(is_paralog == "Self-expression" & slope < 0) %>%
-#   pull(variant_id)
-# # get all rows where variant_id has a negative slope against the gene it's in
-# # then extract rows with a positive slope
+# Filter down to instances where variant leads to decreased expression
+# of the gene it’s in, as well as increased expression of the paralog
+negative_slope_ids <- association_data %>%
+  filter(is_paralog == "Self-expression" & slope < 0) %>%
+  pull(variant_id)
 
-# candidate_variants <- association_data %>%
-#   filter(variant_id %in% negative_slope_ids) %>%
-#   filter(slope > 0)
+# get all rows where variant_id has a negative slope against the gene it's in
+# then extract rows with a positive slope
+candidate_variants <- association_data %>%
+  filter(variant_id %in% negative_slope_ids) %>%
+  filter(slope > 0)
 
-# # do any of these survive multiple testing correction?
-# # We'll start with the higher threshold, genome wide sig
-# genome_wide_sig_candidates <- candidate_variants %>%
-#   filter(pval_nominal <= 5e-8)
-# # save file
-# write.table(
-#   genome_wide_sig_candidates,
-#   file = paste0(output_folder, "genome_wide_sig_candidates.txt"), sep = "\t",
-#   row.names = FALSE
-# )
-# # Save just paralogous candidates
-# paralogous_candidates <- genome_wide_sig_candidates %>%
-#   filter(is_paralog == "Paralogous")
-# write.table(
-#   paralogous_candidates,
-#   file = paste0(
-#     output_folder, "genome_wide_sig_candidates_paralogous.txt"
-#   ), sep = "\t",
-#   row.names = FALSE
-# )
+# Filter for multiple testing correction
+exome_wide_sig_candidates <- candidate_variants %>%
+  filter(pval_nominal <= 1e-5)
+genome_wide_sig_candidates <- candidate_variants %>%
+  filter(pval_nominal <= 5e-8)
+# save files
+exome_wide_ta_tsv <- "exome_wide_sig_ta_candidates.tsv"
+genome_wide_ta_tsv <- "genome_wide_sig_ta_candidates.tsv"
+write.table(
+  exome_wide_sig_candidates,
+  file = exome_wide_ta_tsv, sep = "\t",
+  row.names = FALSE
+)
+write.table(
+  genome_wide_sig_candidates,
+  file = genome_wide_ta_tsv, sep = "\t",
+  row.names = FALSE
+)
+system(glue("gsutil cp {exome_wide_ta_tsv} {genome_wide_ta_tsv} {gcs_outdir}"))
 
-# # plot
-# plot_data(
-#   df = genome_wide_sig_candidates, title = "Genome-wide Significance",
-#   plot_categegory = most_severe_consequence, xlab = "Most Severe Consequence",
-#   keep_facet = "Yes"
-# )
-
-# # Finally, for self-expression, look at just up-regulated instances
-# # start with exome-wide significance
-# positive_slope_self_expression <- association_data %>%
-#   filter(is_paralog == "Self-expression" & slope > 0) %>%
-#   filter(pval_nominal <= 1e-5)
-# nrow(positive_slope_self_expression)
-# # 69
+# plot data
+plot_data(
+  df = genome_wide_sig_candidates, title = "Genome-wide Significance",
+  plot_categegory = most_severe_consequence, xlab = "Most Severe Consequence",
+  keep_facet = "Yes"
+)

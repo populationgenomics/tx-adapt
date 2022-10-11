@@ -1,6 +1,6 @@
 # Test VEP using the analysis runner
 
-This runs a Hail query script in Dataproc using Hail Batch in order to run VEP on a hail matrix table. To run, use conda to install the analysis-runner, then execute the following command:
+This runs an R script to find candidates for [transcriptional adaptation](https://www.nature.com/articles/s41586-019-1064-z). To run, use mamba to [install the analysis-runner](https://github.com/populationgenomics/team-docs/blob/main/getting_started.md#analysis-runner), then execute the following command:
 
 ```sh
 analysis-runner \

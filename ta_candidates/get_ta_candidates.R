@@ -162,6 +162,9 @@ system(glue("gsutil cp {genome_wide_tsv} {exome_wide_tsv} {gcs_outdir}"))
 
 # # Plot data ---------------------------
 
+# set new outpit directory before plotting
+gcs_outdir <- "gs://cpg-tx-adapt-test-web/most_severe_consequences/"
+
 plot_data <- function(df, title, plot_categegory, xlab, keep_facet) {
   # reassign paralogue names for better interpretability in plot
 
@@ -188,8 +191,8 @@ plot_data <- function(df, title, plot_categegory, xlab, keep_facet) {
   }
   # save plot
   ta_plot <- paste0(
-      deparse(substitute(df)), "_", deparse(substitute(plot_categegory)), ".pdf"
-    )
+    deparse(substitute(df)), "_", deparse(substitute(plot_categegory)), ".pdf"
+  )
   pdf(ta_plot, width = 14, height = 8)
   print(p)
   dev.off()

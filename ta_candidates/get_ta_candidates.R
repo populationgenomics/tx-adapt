@@ -10,6 +10,7 @@ library(googleCloudStorageR)
 library(gargle)
 library(tidyverse)
 library(viridis)
+library(glue)
 
 # Google cloud setup/token authorisation (to get files from GCP)
 scope <- c("https://www.googleapis.com/auth/cloud-platform")
@@ -142,16 +143,22 @@ association_data$is_paralog <- factor(gsub(
 genome_wide_sig <- association_data %>% filter(pval_nominal <= 5e-8)
 exome_wide_sig <- association_data %>% filter(pval_nominal <= 1e-5)
 
-print(nrow(genome_wide_sig))
-
-# # Which genes are these?
-# lof_candidates <- exome_wide_sig %>%
-#   filter(variant_category == "lof" & is_paralog == "Paralogous")
-# write.table(
-#   lof_candidates,
-#   file = paste0(output_folder, "lof_candidates_all.txt"), sep = "\t",
-#   row.names = FALSE
-# )
+# Write out table for which genes these are
+# both at genome and exome-level significance
+genome_wide_tsv <- "genome_wide_sig_candidates.tsv"
+exome_wide_tsv <- "exome_wide_sig_candidates.tsv"
+write.table(
+  genome_wide_sig,
+  file = genome_wide_tsv, sep = "\t",
+  row.names = FALSE
+)
+write.table(
+  exome_wide_sig,
+  file = exome_wide_tsv, sep = "\t",
+  row.names = FALSE
+)
+gcs_outdir <- "gs://cpg-tx-adapt-test/output/"
+system(glue("gsutil cp {genome_wide_tsv} {exome_wide_tsv} {gcs_outdir}"))
 
 # # Plot data ---------------------------
 

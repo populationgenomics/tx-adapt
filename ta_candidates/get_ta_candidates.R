@@ -25,7 +25,7 @@ googleCloudStorageR::gcs_global_bucket("gs://cpg-tx-adapt-test")
 # create parser object and define flags
 p <- arg_parser("gtex")
 # Add a positional argument
-p <- add_argument(p, "gtex_file", help = "Name of gtex file")
+p <- add_argument(p, "--gtex_file", help = "Name of gtex file")
 argv <- parse_args(p)
 
 # Copy in association analysis and paralogous gene files

@@ -12,8 +12,8 @@ from cpg_utils.workflows.batch import get_batch
 
 @click.command()
 @click.option('--script', 'script', help='path to VEP main script')
-@click.option('--vep-version', help='Version of VEP', default='104.3')
-def main(script: str, vep_version: str):
+@click.option('--gtex-file', help='gtex file to run')
+def main(script: str, gtex_file: str):
     """
     runs a script inside dataproc to execute VEP
     :param script: str, the path to the VEP main script
@@ -27,11 +27,11 @@ def main(script: str, vep_version: str):
         worker_machine_type='n1-highmem-8',
         worker_boot_disk_size=200,
         secondary_worker_boot_disk_size=200,
-        script=f'{script} --vep-version {vep_version}',
+        script=f'{script} --gtex-file {gtex_file}',
         max_age='12h',
         init=[
             f'gs://cpg-reference/hail_dataproc/install_common.sh',
-            f'gs://cpg-reference/vep/{vep_version}/dataproc/init.sh',
+            f'gs://cpg-reference/vep/88.10/dataproc/init.sh',
         ],
         job_name='run_vep',
         num_secondary_workers=20,

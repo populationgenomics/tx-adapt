@@ -7,9 +7,11 @@ Run VEP on GTEx dataset
 
 import os
 import click
-import pandas as pd
+
+# import pandas as pd
+from hail.utils.java import Env
 import hail as hl
-from cpg_utils.hail_batch import init_batch, output_path
+from cpg_utils.hail_batch import output_path
 
 # VEP 95 (GENCODE 29), which is closest to GENCODE 26
 VEP_HT = (
@@ -26,10 +28,15 @@ def main(gtex_file: str):
     Run vep using main.py wrapper
     """
 
-    init_batch(worker_cores=8, driver_cores=8)
+    # init_batch(worker_cores=8, driver_cores=8)
+    hl.init(default_reference='GRCh38')
 
-    gtex = pd.read_parquet(gtex_file)
-    gtex = hl.Table.from_pandas(gtex)
+    spark = Env.spark_session()
+
+    # gtex = pd.read_parquet(gtex_file)
+    # gtex = hl.Table.from_pandas(gtex)
+    gtex = spark.read.parquet(gtex_file)
+    gtex = hl.Table.from_spark(gtex)
 
     # prepare ht for VEP annotation
     gtex = gtex.annotate(

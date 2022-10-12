@@ -8,5 +8,5 @@ analysis-runner \
     --description "testing for TA" \
     --output-dir "ta/v0" \
     --access-level test \
-    --image australia-southeast1-docker.pkg.dev/analysis-runner/images/driver-r:1 get_ta_candidates.R
+    --image australia-southeast1-docker.pkg.dev/analysis-runner/images/driver-r:1.2 get_ta_candidates.R
 ```

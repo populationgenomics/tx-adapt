@@ -6,7 +6,7 @@
 
 install.packages("googleCloudStorageR", repos = "http://cran.csiro.au")
 install.packages("viridis", repos = "http://cran.csiro.au/")
-# install.packages("argparser", repos = "http://cran.csiro.au/")
+install.packages("argparser", repos = "http://cran.csiro.au/")
 library(googleCloudStorageR)
 library(viridis)
 library(argparser)
@@ -22,19 +22,16 @@ googleCloudStorageR::gcs_auth(token = token)
 # set bucket
 googleCloudStorageR::gcs_global_bucket("gs://cpg-tx-adapt-test")
 
-# # create parser object and define flags
-# p <- arg_parser("gtex")
-# # Add a positional argument
-# p <- add_argument(p, "--gtex_file", help = "Name of gtex file")
-# argv <- parse_args(p)
+# create parser object and define flags
+p <- arg_parser("gtex")
+# Add a positional argument
+p <- add_argument(p, "--gtex_file", help = "Name of gtex file")
+argv <- parse_args(p)
 
 # Copy in association analysis and paralogous gene files
-# system(glue(
-#   "gsutil cp {argv$gtex_file} gtex_annotation_file.tsv.bgz"
-# ))
-system(
-  "gsutil cp gs://cpg-gtex-test/v8/whole_blood/Whole_Blood.v8.EUR.allpairs.chr21.parquet gtex_annotation_file.tsv.bgz"
-)
+system(glue(
+  "gsutil cp {argv$gtex_file} gtex_annotation_file.tsv.bgz"
+))
 system(
   "gsutil cp gs://cpg-tx-adapt-test/mohamed_data/paralogs.txt paralogs.txt"
 )

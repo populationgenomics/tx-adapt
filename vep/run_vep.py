@@ -6,7 +6,8 @@ Run VEP on GTEx dataset
 """
 
 import os
-import click
+
+# import click
 
 # import pandas as pd
 from hail.utils.java import Env
@@ -21,9 +22,9 @@ CADD_HT = 'gs://cpg-reference/seqr/v0-1/combined_reference_data_grch38-2.0.4.ht'
 GENCODE_GTF = 'gs://cpg-gtex-test/reference/gencode.v26.annotation.gtf.gz'
 
 
-@click.command()
-@click.option('--gtex-file', help='gtex file to perform VEP annotation on')
-def main(gtex_file: str):
+# @click.command()
+# @click.option('--gtex-file', help='gtex file to perform VEP annotation on')
+def main():
     """
     Run vep using main.py wrapper
     """
@@ -32,6 +33,9 @@ def main(gtex_file: str):
     hl.init(default_reference='GRCh38')
 
     spark = Env.spark_session()
+    gtex_file = (
+        'gs://cpg-gtex-test/v8/whole_blood/Whole_Blood.v8.EUR.allpairs.chr21.parquet'
+    )
 
     # gtex = pd.read_parquet(gtex_file)
     # gtex = hl.Table.from_pandas(gtex)

@@ -5,11 +5,8 @@ Use VEP using a dataproc cluster.
 """
 
 
-# import sys
 from analysis_runner import dataproc
 from cpg_utils.workflows.batch import get_batch
-
-# GTEX = sys.argv[0]
 
 # create a hail batch
 batch = get_batch('run_vep_in_dataproc_cluster')

@@ -8,5 +8,6 @@ analysis-runner \
     --description "testing for TA" \
     --output-dir "ta/v0" \
     --access-level test \
-    --image australia-southeast1-docker.pkg.dev/analysis-runner/images/driver-r:1.2 get_ta_candidates.R
+    --image australia-southeast1-docker.pkg.dev/analysis-runner/images/driver-r:1.2 get_ta_candidates.R \
+    --gtex_file gs://cpg-tx-adapt-test/vep/v5/vep88.10_cadd_GRCh38_annotation.tsv.bgz
 ```

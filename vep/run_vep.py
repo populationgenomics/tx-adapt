@@ -62,15 +62,11 @@ def main():
         GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True
     )
     gtex = gtex.annotate(gene_id=gtf[gtex.locus].gene_id)
-    # export as both ht and tsv
+    # export as ht
     gtex_path_ht = output_path(
         f'gtex_association_all_positions_maf01_vep95_cadd_annotated.ht'
     )
-    gtex_path_tsv = output_path(
-        f'gtex_association_all_positions_maf01_vep95_cadd_annotated.tsv.bgz'
-    )
     gtex.write(gtex_path_ht, overwrite=True)
-    gtex.export(gtex_path_tsv)
 
 
 if __name__ == '__main__':

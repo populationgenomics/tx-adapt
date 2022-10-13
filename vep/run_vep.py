@@ -25,48 +25,50 @@ def main():
 
     hl.init(default_reference='GRCh38')
 
-    spark = Env.spark_session()
+    # spark = Env.spark_session()
 
-    gtex = spark.read.csv(GTEX_FILE, sep='\t', header=True)
-    gtex = hl.Table.from_spark(gtex)
+    # gtex = spark.read.csv(GTEX_FILE, sep='\t', header=True)
+    # gtex = hl.Table.from_spark(gtex)
 
-    # prepare ht for VEP annotation
-    gtex = gtex.annotate(
-        chromosome=gtex.SNP.split('_')[0],
-        position=gtex.SNP.split('_')[1],
-        alleles=gtex.SNP.split('_')[2:4],
-    )
-    gtex = gtex.annotate(locus=hl.locus(gtex.chromosome, hl.int32(gtex.position)))
-    # 'vep' requires the key to be two fields: 'locus' (type 'locus<any>') and 'alleles' (type 'array<str>')
-    gtex = gtex.key_by('locus', 'alleles')
-    # drop all columns except keys and SNP columns
-    gtex = gtex.select('SNP')
+    # # prepare ht for VEP annotation
+    # gtex = gtex.annotate(
+    #     chromosome=gtex.SNP.split('_')[0],
+    #     position=gtex.SNP.split('_')[1],
+    #     alleles=gtex.SNP.split('_')[2:4],
+    # )
+    # gtex = gtex.annotate(locus=hl.locus(gtex.chromosome, hl.int32(gtex.position)))
+    # # 'vep' requires the key to be two fields: 'locus' (type 'locus<any>') and 'alleles' (type 'array<str>')
+    # gtex = gtex.key_by('locus', 'alleles')
+    # # drop all columns except keys and SNP columns
+    # gtex = gtex.select('SNP')
 
-    # add in VEP annotation and match with gtex association data
-    vep = hl.read_table(VEP_HT)
-    vep = vep[gtex.key].vep
-    # only keep VEP annotation that's relevant for TA analysis
-    gtex = gtex.annotate(
-        most_severe_consequence=vep.most_severe_consequence,
-        consequence_terms=vep.transcript_consequences.consequence_terms,
-        transcript_id=vep.transcript_consequences.transcript_id,
-    )
+    # # add in VEP annotation and match with gtex association data
+    # vep = hl.read_table(VEP_HT)
+    # vep = vep[gtex.key].vep
+    # # only keep VEP annotation that's relevant for TA analysis
+    # gtex = gtex.annotate(
+    #     most_severe_consequence=vep.most_severe_consequence,
+    #     consequence_terms=vep.transcript_consequences.consequence_terms,
+    #     transcript_id=vep.transcript_consequences.transcript_id,
+    # )
 
-    # add CADD annotation
-    cadd = hl.read_table(CADD_HT)
-    gtex = gtex.annotate(
-        cadd=cadd[gtex.key].cadd,
-    )
-    # add in ensembl ids
-    gtf = hl.experimental.import_gtf(
-        GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True
-    )
-    gtex = gtex.annotate(gene_id=gtf[gtex.locus].gene_id)
-    # export as ht
-    gtex_path_ht = output_path(
-        f'gtex_association_all_positions_maf01_vep95_cadd_annotated.ht'
-    )
-    gtex.write(gtex_path_ht, overwrite=True)
+    # # add CADD annotation
+    # cadd = hl.read_table(CADD_HT)
+    # gtex = gtex.annotate(
+    #     cadd=cadd[gtex.key].cadd,
+    # )
+    # # add in ensembl ids
+    # gtf = hl.experimental.import_gtf(
+    #     GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True
+    # )
+    # gtex = gtex.annotate(gene_id=gtf[gtex.locus].gene_id)
+    # # export as ht
+    # gtex_path_ht = output_path(
+    #     f'gtex_association_all_positions_maf01_vep95_cadd_annotated.ht'
+    # )
+    # gtex.write(gtex_path_ht, overwrite=True)
+    gtex = hl.read_table('gs://cpg-tx-adapt-test/vep/v8/gtex_association_all_positions_maf01_vep95_cadd_annotated.ht/')
+    gtex.export('gs://cpg-tx-adapt-test/vep/v8/gtex_association_all_positions_maf01_vep95_cadd_annotated.tsv.bgz')
 
 
 if __name__ == '__main__':

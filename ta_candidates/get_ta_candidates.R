@@ -7,9 +7,11 @@
 install.packages("googleCloudStorageR", repos = "http://cran.csiro.au")
 install.packages("viridis", repos = "http://cran.csiro.au/")
 install.packages("argparser", repos = "http://cran.csiro.au/")
+install.packages("arrow", repos = "http://cran.csiro.au/")
 library(googleCloudStorageR)
 library(viridis)
 library(argparser)
+library(arrow)
 library(gargle)
 library(tidyverse)
 library(glue)
@@ -29,24 +31,37 @@ p <- add_argument(p, "--gtex_file", help = "Name of gtex file")
 argv <- parse_args(p)
 
 gtex_file <- str(argv$gtex_file)
+vep_file <- "gs://cpg-tx-adapt-test/vep/v8/gtex_association_all_positions_maf01_vep95_cadd_annotated.tsv.bgz"
+paralogous_gene_file <- "gs://cpg-tx-adapt-test/mohamed_data/paralogs.txt"
 
-# Copy in association analysis and paralogous gene files
+# Copy in association analysis, VEP, and paralogous gene files
 system(glue(
-  "gsutil cp {argv$gtex_file} gtex_annotation_file.tsv.bgz"
+  "gsutil cp {argv$gtex_file} gtex_annotation_file.parquet"
+))
+system(glue(
+  "gsutil cp {vep_file} vep.tsv.bgz"
 ))
 system(
-  "gsutil cp gs://cpg-tx-adapt-test/mohamed_data/paralogs.txt paralogs.txt"
+  "gsutil cp {paralogous_gene_file} paralogs.txt"
 )
 # read in files once copied
-association_data <- read.table(
-  "gtex_annotation_file.tsv.bgz",
-  sep = "\t", header = TRUE
-)
+association_data <- read_parquet(
+  "gtex_annotation_file.parquet")
+vep_cadd_df <- read.table("vep.tsv.bgz", sep = "\t", header = TRUE)
 paralogous_gene_df <- read.csv("paralogs.txt",
   na.strings = ""
 )
 
 # Data cleaning and qc --------------------------------------------------------
+
+# intersect variants from association analysis with VEP file to get
+# most severe consequence and CADD terms
+association_data$most_severe_consequence <- vep_cadd_df[match(
+  association_data$variant_id, vep_cadd_df$SNP), "most_severe_consequence"]
+association_data$cadd <- vep_cadd_df[match(
+  association_data$variant_id, vep_cadd_df$SNP), "cadd"]
+association_data$gene_id <- vep_cadd_df[match(
+  association_data$variant_id, vep_cadd_df$SNP), "gene_id"]
 
 # remove version numbers from association_data$phenotype_id and gene_id
 # https://www.biostars.org/p/302441/

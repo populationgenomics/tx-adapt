@@ -41,9 +41,9 @@ system(glue(
 system(glue(
   "gsutil cp {vep_file} vep.tsv.bgz"
 ))
-system(
+system(glue(
   "gsutil cp {paralogous_gene_file} paralogs.txt"
-)
+))
 # read in files once copied
 association_data <- read_parquet(
   "gtex_annotation_file.parquet")

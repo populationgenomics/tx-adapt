@@ -173,8 +173,10 @@ exome_wide_sig <- association_data %>% filter(pval_nominal <= 1e-5)
 # both at genome and exome-level significance
 # write for each chromosome
 chr <- gsub("\\..*", "", sapply(strsplit(gtex_file, "chr"), `[`)[2])
-genome_wide_tsv <- "chr{chr}_genome_wide_sig_candidates_either_direction.tsv"
-exome_wide_tsv <- "chr{chr}_genome_wide_sig_candidates_either_direction.tsv"
+genome_wide_tsv <- glue(
+  "chr{chr}_genome_wide_sig_candidates_either_direction.tsv")
+exome_wide_tsv <- glue(
+  "chr{chr}_genome_wide_sig_candidates_either_direction.tsv")
 write.table(
   genome_wide_sig,
   file = genome_wide_tsv, sep = "\t",
@@ -188,13 +190,13 @@ write.table(
 # assign output directory
 # this should be split up by cell type
 cell_type <- tail(sapply(strsplit(dirname(gtex_file), "/"), `[`), n = 1)
-gcs_outdir <- "gs://cpg-tx-adapt-test/ta_candidates/{cell_type}/"
+gcs_outdir <- glue("gs://cpg-tx-adapt-test/ta_candidates/{cell_type}/")
 system(glue("gsutil cp {genome_wide_tsv} {exome_wide_tsv} {gcs_outdir}"))
 
 # Plot data -------------------------------------------------------------------
 
 # set output directory for plotting
-gcs_image_outdir <- "gs://cpg-tx-adapt-test-web/ta_candidates/{cell_type}/"
+gcs_image_outdir <- glue("gs://cpg-tx-adapt-test-web/ta_candidates/{cell_type}/")
 
 # make plotting function, as this is heavily repeated
 plot_data <- function(df, title, plot_categegory, xlab, keep_facet) {
@@ -220,9 +222,9 @@ plot_data <- function(df, title, plot_categegory, xlab, keep_facet) {
     p <- p + facet_grid(. ~ is_paralog, )
   }
   # save plot
-  ta_plot <- paste0("chr{chr}_",
+  ta_plot <- paste0(glue("chr{chr}_",
     deparse(substitute(df)), "_", deparse(substitute(plot_categegory)), ".pdf"
-  )
+  ))
   pdf(ta_plot, width = 14, height = 8)
   print(p)
   dev.off()
@@ -273,8 +275,8 @@ exome_wide_sig_candidates <- candidate_variants %>%
 genome_wide_sig_candidates <- candidate_variants %>%
   filter(pval_nominal <= 5e-8)
 # save files
-exome_wide_ta_tsv <- "chr{chr}_exome_wide_sig_ta_candidates.tsv"
-genome_wide_ta_tsv <- "chr{chr}_genome_wide_sig_ta_candidates.tsv"
+exome_wide_ta_tsv <- glue("chr{chr}_exome_wide_sig_ta_candidates.tsv")
+genome_wide_ta_tsv <- glue("chr{chr}_genome_wide_sig_ta_candidates.tsv")
 write.table(
   exome_wide_sig_candidates,
   file = exome_wide_ta_tsv, sep = "\t",

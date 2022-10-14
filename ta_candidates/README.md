@@ -7,7 +7,7 @@ analysis-runner \
     --dataset tx-adapt \
     --description "testing for TA" \
     --output-dir "ta/v0" \
-    --access-level test \
+    --access-level test --memory=highmem --cpu=4 \
     --image australia-southeast1-docker.pkg.dev/analysis-runner/images/driver-r:1.2 get_ta_candidates.R \
     --gtex_file gs://cpg-gtex-test/v8/brain_amygdala/Brain_Amygdala.v8.EUR.allpairs.chr21.parquet
 ```

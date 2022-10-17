@@ -56,7 +56,7 @@ def main(vep_version: str):
         consequence_terms=vep.transcript_consequences.consequence_terms,
         transcript_id=vep.transcript_consequences.transcript_id,
     )
-    # run VEP 88 (note mismatch) on INDELs
+    # run VEP 88 (note version mismatch - this should be decide on later) on INDELs
     gtex_indels = gtex.filter(hl.is_indel(gtex.alleles[0], gtex.alleles[1]), keep=True)
     gtex_indels = hl.vep(gtex_indels, config='file:///vep_data/vep-gcloud.json')
     # rename columns to match SNV table

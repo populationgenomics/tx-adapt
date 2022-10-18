@@ -26,11 +26,14 @@ def main(vep_version: str):
 
     # get INDELs only
     gtex_indels = gtex.filter(hl.is_indel(gtex.alleles[0], gtex.alleles[1]), keep=True)
-    # Run VEP on INDELs
-    gtex_indels = hl.vep(gtex_indels, config='file:///vep_data/vep-gcloud.json')
+    # checkpoint and run VEP
+    gtex_indels_path_ht = output_path(f'gtex_indels.ht')
+    gtex_indels = gtex_indels.checkpoint(gtex_indels_path_ht, overwrite=True)
+    # Run VEP on checkpointed INDELs
+    vep = hl.vep(gtex_indels, config='file:///vep_data/vep-gcloud.json')
     # save ht
-    gtex_indels_path_ht = output_path(f'gtex_variants_indels_vep{vep_version}.ht')
-    gtex_indels.write(gtex_indels_path_ht, overwrite=True)
+    vep_indels_path_ht = output_path(f'gtex_variants_indels_vep{vep_version}.ht')
+    vep.write(vep_indels_path_ht, overwrite=True)
 
 
 if __name__ == '__main__':

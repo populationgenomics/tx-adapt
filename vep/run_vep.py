@@ -28,7 +28,8 @@ def main(vep_version: str):
     gtex_indels = gtex.filter(hl.is_indel(gtex.alleles[0], gtex.alleles[1]), keep=True)
     # get 10 simple INDELs where insertion or deletion is not more than 2 bp
     gtex_indels = gtex_indels.filter(
-        (hl.len(gtex_indels.alleles[0]) < 3) & (hl.len(gtex_indels.alleles[1]) < 3)
+        (hl.len(gtex_indels.alleles[0]) == 100)
+        | (hl.len(gtex_indels.alleles[1]) == 100)
     ).head(10)
     # checkpoint and run VEP
     gtex_indels_path_ht = output_path(f'gtex_indels.ht')

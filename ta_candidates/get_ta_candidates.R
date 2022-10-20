@@ -8,10 +8,12 @@ install.packages("googleCloudStorageR", repos = "http://cran.csiro.au")
 install.packages("viridis", repos = "http://cran.csiro.au/")
 install.packages("argparser", repos = "http://cran.csiro.au/")
 install.packages("arrow", repos = "http://cran.csiro.au/")
+install.packages("biomaRt", repos = "http://cran.csiro.au/")
 library(googleCloudStorageR)
 library(viridis)
 library(argparser)
 library(arrow)
+library(biomaRt)
 library(gargle)
 library(tidyverse)
 library(glue)
@@ -32,7 +34,6 @@ argv <- parse_args(p)
 
 gtex_file <- argv$gtex_file
 vep_file <- "gs://cpg-tx-adapt-test/vep/v8/gtex_association_all_positions_maf01_vep95_cadd_annotated.tsv.bgz"
-# vep_file <- "gs://cpg-tx-adapt-test/vep/v8/chromosome21.vep.txt"
 paralogous_gene_file <- "gs://cpg-tx-adapt-test/mohamed_data/paralogs.txt"
 
 # Copy in association analysis, VEP, and paralogous gene files
@@ -45,7 +46,7 @@ system(glue(
 system(glue(
   "gsutil cp {paralogous_gene_file} paralogs.txt"
 ))
-# read in files once copied
+# Read in files once copied
 association_data <- read_parquet(
   "gtex_annotation_file.parquet")
 vep_cadd_df <- read.table("vep.tsv.bgz", sep = "\t", header = TRUE)
@@ -55,7 +56,7 @@ paralogous_gene_df <- read.csv("paralogs.txt",
 
 # Data cleaning and qc --------------------------------------------------------
 
-# intersect variants from association analysis with VEP file to get
+# Intersect variants from association analysis with VEP file to get
 # most severe consequence and CADD terms
 association_data$most_severe_consequence <- vep_cadd_df[match(
   association_data$variant_id, vep_cadd_df$SNP), "most_severe_consequence"]
@@ -64,7 +65,7 @@ association_data$cadd <- vep_cadd_df[match(
 association_data$gene_id <- vep_cadd_df[match(
   association_data$variant_id, vep_cadd_df$SNP), "gene_id"]
 
-# remove version numbers from association_data$phenotype_id and gene_id
+# Remove version numbers from association_data$phenotype_id and gene_id
 # https://www.biostars.org/p/302441/
 association_data$phenotype_id <- gsub(
   "\\..*", "", association_data$phenotype_id
@@ -73,13 +74,13 @@ association_data$gene_id <- gsub(
   "\\..*", "", association_data$gene_id
 )
 
-# make sure all gene IDs in the paralog file and eqtl association file match
+# Make sure all gene IDs in the paralog file and eqtl association file match
 matching_genes <- which(
   association_data$phenotype_id %in% paralogous_gene_df$Gene.stable.ID
 )
 association_data <- association_data[matching_genes, ]
 
-# label variants as being LoF, missense, or nonsynonymous
+# Label variants as being LoF, missense, or nonsynonymous
 lof <- c(
   "transcript_ablation", "splice_acceptor_variant",
   "splice_donor_variant", "stop_gained", "frameshift_variant",
@@ -112,7 +113,7 @@ association_data <- association_data %>% mutate(variant_category = case_when(
   cadd > 15 & variant_category == "missense" ~ "missense_deleterious",
   TRUE ~ as.character(variant_category)
 ))
-# do this for the most severe consequence column as well
+# Do this for the most severe consequence column as well
 association_data <- association_data %>%
   mutate(most_severe_consequence = case_when(
     cadd < 15 &
@@ -136,7 +137,7 @@ collapsed_paralog_df <- paralogous_gene_df %>%
   summarise(
     Human.paralogue.gene.stable.ID = list(Human.paralogue.gene.stable.ID)
   )
-# for clarity, assign names as the gene stable IDs
+# For clarity, assign names as the gene stable IDs
 names(
   collapsed_paralog_df$Human.paralogue.gene.stable.ID
 ) <- collapsed_paralog_df$Gene.stable.ID
@@ -151,20 +152,20 @@ is_paralog <- sapply(
       matched_paralogs$Human.paralogue.gene.stable.ID[x][[1]]
   }
 )
-# assign whether a variant has a paralogous gene as an eQTL
+# Assign whether a variant has a paralogous gene as an eQTL
 association_data$is_paralog <- is_paralog
 
-# label variants that are an eQTL to themselves
+# Label variants that are an eQTL to themselves
 association_data <- association_data %>% mutate(
   is_paralog = replace(is_paralog, gene_id == phenotype_id, "Self-expression")
 )
-# make paralogs into distinct, readable categories
+# Make paralogs into distinct, readable categories
 association_data$is_paralog <- factor(gsub(
   "FALSE", "Non-paralogous",
   gsub("TRUE", "Paralogous", association_data$is_paralog)
 ))
 
-# filter down to significant genes only
+# Filter down to significant genes only
 # significance here is defined as 5x10-8 (for genome-wide significance)
 genome_wide_sig <- association_data %>% filter(pval_nominal <= 5e-8)
 exome_wide_sig <- association_data %>% filter(pval_nominal <= 1e-5)
@@ -187,7 +188,7 @@ write.table(
   file = exome_wide_tsv, sep = "\t",
   row.names = FALSE
 )
-# assign output directory
+# Assign output directory
 # this should be split up by cell type
 cell_type <- tail(sapply(strsplit(dirname(gtex_file), "/"), `[`), n = 1)
 gcs_outdir <- glue("gs://cpg-tx-adapt-test/ta_candidates/{cell_type}/")
@@ -195,10 +196,10 @@ system(glue("gsutil cp {genome_wide_tsv} {exome_wide_tsv} {gcs_outdir}"))
 
 # Plot data -------------------------------------------------------------------
 
-# set output directory for plotting
+# Set output directory for plotting
 gcs_image_outdir <- glue("gs://cpg-tx-adapt-test-web/ta_candidates/{cell_type}/")
 
-# make plotting function, as this is heavily repeated
+# Make plotting function, as this is heavily repeated
 plot_data <- function(df, title, plot_categegory, xlab, keep_facet) {
   p <- ggplot(df, aes(
     x = factor({{ plot_categegory }}), fill = {{ plot_categegory }}
@@ -221,18 +222,18 @@ plot_data <- function(df, title, plot_categegory, xlab, keep_facet) {
   if (tolower(keep_facet) == "yes") {
     p <- p + facet_grid(. ~ is_paralog, )
   }
-  # save plot
+  # Save plot
   ta_plot <- paste0(glue("chr{chr}_",
     deparse(substitute(df)), "_", deparse(substitute(plot_categegory)), ".pdf"
   ))
   pdf(ta_plot, width = 14, height = 8)
   print(p)
   dev.off()
-  # copy pdf to system
+  # Copy pdf to system
   system(glue("gsutil cp {ta_plot} {gcs_image_outdir}"))
 }
 
-# plot data
+# Plot data
 plot_data(
   df = genome_wide_sig, title = "Genome-wide Significance",
   plot_categegory = most_severe_consequence,
@@ -243,7 +244,7 @@ plot_data(
   plot_categegory = most_severe_consequence,
   xlab = "Most Severe Consequence", keep_facet = "Yes"
 )
-# plot looking at the variant category
+# Plot looking at the variant category
 plot_data(
   df = genome_wide_sig, title = "Genome-wide Significance",
   plot_categegory = variant_category,
@@ -263,18 +264,39 @@ negative_slope_ids <- association_data %>%
   filter(is_paralog == "Self-expression" & slope < 0) %>%
   pull(variant_id)
 
-# get all rows where variant_id has a negative slope against the gene it's in
+# Get all rows where variant_id has a negative slope against the gene it's in
 # then extract rows with a positive slope
 candidate_variants <- association_data %>%
   filter(variant_id %in% negative_slope_ids) %>%
   filter(slope > 0)
 
 # Filter for multiple testing correction
+# start with the exome-wide-significance
 exome_wide_sig_candidates <- candidate_variants %>%
   filter(pval_nominal <= 1e-5)
+
+# Label all genes with their biotype. This is done after filtering for
+# significance, as biomaRt is very slow
+mart <- useMart(
+  biomart = "ENSEMBL_MART_ENSEMBL",
+  dataset = "hsapiens_gene_ensembl",
+  host = "www.ensembl.org"
+)
+biotype <- biomaRt::getBM(
+  attributes = c(
+    "ensembl_gene_id", "gene_biotype"
+  ),
+  filters = "ensembl_gene_id",
+  values = exome_wide_sig_candidates$gene_id, mart = mart
+)
+exome_wide_sig_candidates$biotype <- biotype[match(
+  exome_wide_sig_candidates$gene_id, biotype$ensembl_gene_id), "gene_biotype"]
+
+# Now filter for genome-wide significance, defined here as 5x10-8
 genome_wide_sig_candidates <- candidate_variants %>%
   filter(pval_nominal <= 5e-8)
-# save files
+
+# Save files
 exome_wide_ta_tsv <- glue("chr{chr}_exome_wide_sig_ta_candidates.tsv")
 genome_wide_ta_tsv <- glue("chr{chr}_genome_wide_sig_ta_candidates.tsv")
 write.table(
@@ -289,7 +311,7 @@ write.table(
 )
 system(glue("gsutil cp {exome_wide_ta_tsv} {genome_wide_ta_tsv} {gcs_outdir}"))
 
-# plot data
+# Plot data
 plot_data(
   df = genome_wide_sig_candidates, title = "Genome-wide Significance",
   plot_categegory = most_severe_consequence, xlab = "Most Severe Consequence",

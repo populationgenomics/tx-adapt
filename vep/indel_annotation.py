@@ -35,8 +35,9 @@ def main():
         transcript_id=ht[indels.key].vep.transcript_consequences.transcript_id,
     )
 
-    # load in SNVs and make union on tables
+    # load in SNVs table. This includes unannotated INDELs, which should be removed
     snvs = hl.read_table(SNV_HT)
+    snvs = snvs.filter(hl.is_indel(snvs.alleles[0], snvs.alleles[1]), keep=False)
     gtex_union = snvs.union(indels)
     gtex_union.write(output_path('union_snv_indels.ht'))
 

@@ -33,7 +33,7 @@ p <- add_argument(p, "--gtex_file", help = "Name of gtex file")
 argv <- parse_args(p)
 
 gtex_file <- argv$gtex_file
-vep_file <- "gs://cpg-tx-adapt-test/vep/v8/gtex_association_all_positions_maf01_vep95_cadd_annotated.tsv.bgz"
+vep_file <- "gs://cpg-tx-adapt-test/vep/v10/union_snv_indels.tsv.bgz"
 paralogous_gene_file <- "gs://cpg-tx-adapt-test/mohamed_data/paralogs.txt"
 
 # Copy in association analysis, VEP, and paralogous gene files

@@ -4,12 +4,6 @@
 
 # Library setup and loading data ----------------------------------------------
 
-install.packages("googleCloudStorageR", repos = "http://cran.csiro.au")
-install.packages("viridis", repos = "http://cran.csiro.au/")
-install.packages("argparser", repos = "http://cran.csiro.au/")
-install.packages("arrow", repos = "http://cran.csiro.au/")
-install.packages("BiocManager", repos = "http://cran.csiro.au/")
-BiocManager::install("biomaRt")
 library(biomaRt)
 library(googleCloudStorageR)
 library(viridis)

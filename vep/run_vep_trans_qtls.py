@@ -58,11 +58,13 @@ def main():
     gtex = gtex.checkpoint(gtex_path, overwrite=True)
     print(gtex.show())
 
-    # # add CADD annotation
-    # cadd = hl.read_table(CADD_HT)
-    # gtex = gtex.annotate(
-    #     cadd=cadd[gtex.key].cadd,
-    # )
+    # add CADD annotation
+    cadd = hl.read_table(CADD_HT)
+    gtex = gtex.annotate(
+        cadd=cadd[gtex.key].cadd,
+    )
+    gtex = gtex.checkpoint(gtex_path, overwrite=True)
+    print(gtex.show())
     # # add in ensembl ids
     # gtf = hl.experimental.import_gtf(
     #     GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True

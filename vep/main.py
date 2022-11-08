@@ -7,7 +7,9 @@ Use VEP using a dataproc cluster.
 
 import click
 from analysis_runner import dataproc
-from cpg_utils.workflows.batch import get_batch
+import hailtop.batch as hb
+from cpg_utils.config import get_config
+from cpg_utils.hail_batch import remote_tmpdir
 
 
 @click.command()
@@ -20,7 +22,11 @@ def main(script: str, vep_version: str):
     """
 
     # create a hail batch
-    batch = get_batch('run_vep_in_dataproc_cluster')
+    backend = hb.ServiceBackend(
+        billing_project=get_config()['hail']['billing_project'],
+        remote_tmpdir=remote_tmpdir(),
+    )
+    batch = hb.Batch(name='run_vep', backend=backend)
 
     dataproc.hail_dataproc_job(
         batch=batch,

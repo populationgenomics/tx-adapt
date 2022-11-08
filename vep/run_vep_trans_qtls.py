@@ -45,33 +45,28 @@ def main():
     gtex = gtex.annotate(locus=hl.locus(gtex.chromosome, hl.int32(gtex.position)))
     # 'vep' requires the key to be two fields: 'locus' (type 'locus<any>') and 'alleles' (type 'array<str>')
     gtex = gtex.key_by('locus', 'alleles')
-    # add in VEP annotation and match with gtex association SNV data
-    vep = hl.read_table(VEP_HT)
-    # filter vep table to only entries in gtex table
-    vep = vep.semi_join(gtex)
-    # checkpoint table
-    vep_path = output_path(f'vep.ht')
-    vep = vep.checkpoint(vep_path, overwrite=True)
-    # order vep entries in the right order
-    vep = vep[gtex.key].vep
-    # only keep VEP annotation that's relevant for TA analysis
-    gtex = gtex.annotate(
-        most_severe_consequence=vep.most_severe_consequence,
-        consequence_terms=vep.transcript_consequences.consequence_terms,
-        transcript_id=vep.transcript_consequences.transcript_id,
-    )
-    gtex_path = output_path(f'trans_qtl_vep.ht')
-    gtex = gtex.checkpoint(gtex_path, overwrite=True)
-    print(gtex.show())
+    # # add in VEP annotation and match with gtex association SNV data
+    # vep = hl.read_table(VEP_HT)
+    # # order vep entries in the right order
+    # vep = vep[gtex.key].vep
+    # # only keep VEP annotation that's relevant for TA analysis
+    # gtex = gtex.annotate(
+    #     most_severe_consequence=vep.most_severe_consequence,
+    #     consequence_terms=vep.transcript_consequences.consequence_terms,
+    #     transcript_id=vep.transcript_consequences.transcript_id,
+    # )
+    # gtex_path = output_path(f'trans_qtl_vep.ht')
+    # gtex = gtex.checkpoint(gtex_path, overwrite=True)
+    # print(gtex.show())
 
-    # add CADD annotation
-    cadd = hl.read_table(CADD_HT)
-    gtex = gtex.annotate(
-        cadd=cadd[gtex.key].cadd,
-    )
-    gtex = gtex.checkpoint(gtex_path, overwrite=True)
-    print(gtex.show())
-    # add in ensembl ids
+    # # add CADD annotation
+    # cadd = hl.read_table(CADD_HT)
+    # gtex = gtex.annotate(
+    #     cadd=cadd[gtex.key].cadd,
+    # )
+    # gtex = gtex.checkpoint(gtex_path, overwrite=True)
+    # print(gtex.show())
+    # # add in ensembl ids
     gtf = hl.experimental.import_gtf(
         GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True
     )

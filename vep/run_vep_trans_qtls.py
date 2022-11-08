@@ -47,6 +47,11 @@ def main():
     gtex = gtex.key_by('locus', 'alleles')
     # add in VEP annotation and match with gtex association SNV data
     vep = hl.read_table(VEP_HT)
+    # filter vep table to only entries in gtex table
+    vep = vep.semi_join(gtex)
+    # checkpoint table
+    vep_path = output_path(f'vep.ht')
+    vep = vep.checkpoint(vep_path, overwrite=True)
     # order vep entries in the right order
     vep = vep[gtex.key].vep
     # only keep VEP annotation that's relevant for TA analysis

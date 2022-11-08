@@ -55,12 +55,6 @@ def main():
         transcript_id=vep.transcript_consequences.transcript_id,
     )
 
-    # add in VEP annotation
-    vep = hl.vep(gtex, config='file:///vep_data/vep-gcloud.json')
-    # export as ht
-    vep_path_ht = output_path(f'trans_qtl_variants_vep_annotated.ht')
-    vep.write(vep_path_ht, overwrite=True)
-
     # add CADD annotation
     cadd = hl.read_table(CADD_HT)
     gtex = gtex.annotate(

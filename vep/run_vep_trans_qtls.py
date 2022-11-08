@@ -47,15 +47,8 @@ def main():
     gtex = gtex.key_by('locus', 'alleles')
     # add in VEP annotation and match with gtex association SNV data
     vep = hl.read_table(VEP_HT)
-    # filter vep table to only entries in gtex table
-    vep = vep.semi_join(gtex)
-    vep_path = output_path(f'vep.ht')
-    vep = vep.checkpoint(vep_path, overwrite=True)
-    print(vep.show())
     # order vep entries in the right order
     vep = vep[gtex.key].vep
-    vep = vep.checkpoint(vep_path, overwrite=True)
-    print(vep.show())
     # only keep VEP annotation that's relevant for TA analysis
     gtex = gtex.annotate(
         most_severe_consequence=vep.most_severe_consequence,
@@ -68,10 +61,6 @@ def main():
 
     # add CADD annotation
     cadd = hl.read_table(CADD_HT)
-    # filter cadd table to only entries in gtex table
-    cadd = cadd.semi_join(gtex)
-    cadd_path = output_path(f'cadd.ht')
-    cadd = cadd.checkpoint(cadd_path, overwrite=True)
     gtex = gtex.annotate(
         cadd=cadd[gtex.key].cadd,
     )
@@ -82,9 +71,6 @@ def main():
         GENCODE_GTF, reference_genome='GRCh38', skip_invalid_contigs=True, force=True
     )
     # filter gtf to only entries in gtex table
-    gtf = gtf.semi_join(gtex)
-    gtf_path = output_path(f'gtf.ht')
-    gtf = gtf.checkpoint(gtf_path, overwrite=True)
     gtex = gtex.annotate(variant_gene_id=gtf[gtex.locus].gene_id)
     # export as ht
     gtex_path_ht = output_path(f'trans_qtl_vep_gnomADcontext95_cadd_annotated.ht')

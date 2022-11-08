@@ -25,17 +25,13 @@ def main(script: str, vep_version: str):
     dataproc.hail_dataproc_job(
         batch=batch,
         worker_machine_type='n1-highmem-8',
-        worker_boot_disk_size=200,
-        secondary_worker_boot_disk_size=200,
         script=f'{script} --vep-version {vep_version}',
-        max_age='12h',
+        max_age='2h',
         init=[
             f'gs://cpg-reference/hail_dataproc/install_common.sh',
             f'gs://cpg-reference/vep/{vep_version}/dataproc/init.sh',
         ],
         job_name='run_vep',
-        num_secondary_workers=20,
-        num_workers=2,
         cluster_name='run vep',
     )
 

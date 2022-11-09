@@ -49,7 +49,7 @@ def main():
     vep = hl.read_table(VEP_HT)
     vep = vep.semi_join(gtex)
     vep_path = output_path(f'vep.ht', 'tmp')
-    vep = vep.checkpoint(vep_path, overwrite=True)
+    vep.write(vep_path, overwrite=True)
     # # order vep entries in the right order
     # vep = vep[gtex.key].vep
     # # only keep VEP annotation that's relevant for TA analysis
